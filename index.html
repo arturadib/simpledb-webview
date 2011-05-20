@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>SimpleDB WebView - UI and explorer</title>
+
+    <!-- Theme -->
+    <link type="text/css" href="themes/aristo/jquery-ui.custom.css" rel="stylesheet" /> 
+
+    <!-- jQuery and jQuery UI -->
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script>
+
+    <!-- jQuery Templates -->
+    <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
+
+		<!-- jQuery Layout -->
+		<script type="text/javascript" src="plugins/layout/jquery.layout.min-1.2.0.js"></script>
+
+    <!-- jQuery tablefixedheader -->
+    <link type="text/css" href="plugins/tablefixedheader/base.css" rel="stylesheet" /> 
+    <script type="text/javascript" src="plugins/tablefixedheader/jquery.fixheadertable.js"></script>
+
+
+
+
+
+
+  <script type="text/javascript" src="demo_data.js"></script>
+
+
+
+
+
+
+
+		<!-- Main script -->
+		<script type="text/javascript">
+			$(function(){				
+				$('button').button();
+				
+				//
+				// Layout
+				//
+				$('body').layout({ 
+				  applyDefaultStyles: true,
+          spacing_open: 4,
+          north__spacing_open: 0,
+				  north__size: 50,
+          north__resizable: false,
+          north__closable: false,
+          west__minSize: 100
+				});
+        
+        //
+        // Table
+        //
+        $.template('dataTemplate', '<tr><td title="${title}">${title}</td> <td title="${description}">${description}</td> <td title="${url}">${url}</td></tr>');
+        $.tmpl('dataTemplate', window.demoData).appendTo('#the-table');
+       
+        var $origTableParent = $('#the-table').parent(); // prior to the wrappers due to fixheadertable()
+        var $theTable = $('#the-table').fixheadertable({
+          zebra: true,
+          zebraClass: 'table-zebra',
+          height: 200,          
+          wrapper: false,
+          colratio: [500,500,500],
+          resizeCol: true
+        });
+        
+        fitTable($theTable, $origTableParent);
+        $(window).resize(function(){
+          clearTimeout(window.resizeTimer);
+          window.resizeTimer = setTimeout(function(){ // hack to ensure the event is only fired *after* resizing motion            
+            fitTable($theTable, $origTableParent);                        
+          }, 500);
+        });
+        
+        function fitTable($tableObj, $parentObj) {
+          var $tableBody = $tableObj.parents('.body');
+          $tableBody.height( $parentObj.height() - $tableBody.siblings('.headtable').height() - 2); // see DOM after $.fixheadertable()
+        }
+			});
+		</script>
+
+		<style type="text/css">
+		  html,body { margin:0; padding:0; font-family: Arial, sans-serif; font-size:13px; }
+      input { padding:5px !important; font-size:13px; }
+        
+		  .ui-layout-north { padding:0 !important; overflow:hidden !important; }
+		  .ui-layout-center { padding:0 !important; overflow:hidden !important; }
+		  .ui-layout-west { padding:0 !important; overflow:hidden !important; background:#D2D8E1 !important; }
+
+      .ui-layout-north {
+        background: #777 !important; /* for non-css3 browsers */
+
+        filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#cccccc', endColorstr='#777777') !important; /* for IE */
+        background: -webkit-gradient(linear, left top, left bottom, from(#ccc), to(#777)) !important; /* for webkit browsers */
+        background: -moz-linear-gradient(top,  #ccc,  #777) !important; /* for firefox 3.6+ */ 
+      }
+      .ui-layout-north img { position:absolute; top:0; left:0; }
+      .ui-layout-north .credentials { position:absolute; top:8px; left:380px; }
+		  
+      .table-zebra { background:#F0F4F9; }		  
+		</style>	
+	</head>
+
+	<body>
+
+    <div class="ui-layout-north">
+      <img src='sdb-webview.png' />
+      <div class='credentials'>
+        <input style='width:150px' placeholder='AWS Access Key ID'></input>
+        <input style='width:150px' placeholder='AWS Secret Access Key'></input>
+        <button style='height:30px; margin-left:5px;'>Connect</button>
+      </div>
+    </div>
+        
+    <div class="ui-layout-west">
+    </div>
+
+    <div class="ui-layout-center">
+      <table cellpadding="0" cellspacing="0" border="0" class="display" id="the-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>url</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+
+	</body>
+</html>
+
+
