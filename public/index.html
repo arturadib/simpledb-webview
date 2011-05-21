@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-		<title>SimpleDB WebView - UI and explorer</title>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SimpleDB WebView - UI and explorer</title>
 
     <!-- Theme -->
     <link type="text/css" href="themes/aristo/jquery-ui.custom.css" rel="stylesheet" /> 
 
     <!-- jQuery and jQuery UI -->
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script>
 
     <!-- jQuery Templates -->
     <script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
 
-		<!-- jQuery Layout -->
-		<script type="text/javascript" src="plugins/layout/jquery.layout.min-1.2.0.js"></script>
+    <!-- jQuery Layout -->
+    <script type="text/javascript" src="plugins/layout/jquery.layout.min-1.2.0.js"></script>
 
     <!-- jQuery tablefixedheader -->
     <link type="text/css" href="plugins/tablefixedheader/base.css" rel="stylesheet" /> 
@@ -35,23 +35,36 @@
 
 
 
-		<!-- Main script -->
-		<script type="text/javascript">
-			$(function(){				
-				$('button').button();
-				
-				//
-				// Layout
-				//
-				$('body').layout({ 
-				  applyDefaultStyles: true,
+    <!-- Main script -->
+    <script type="text/javascript">
+      $(function(){       
+        $('button').button();
+        
+        //
+        // Dialog
+        //
+        $('.dialog').dialog({
+          autoOpen: false,
+          modal: true,
+          buttons: {
+            Ok: function() {
+              $(this).dialog('close');
+            }
+          }         
+        });
+        
+        //
+        // Layout
+        //
+        $('body').layout({ 
+          applyDefaultStyles: true,
           spacing_open: 4,
           north__spacing_open: 0,
-				  north__size: 50,
+          north__size: 50,
           north__resizable: false,
           north__closable: false,
           west__minSize: 150
-				});
+        });
         
         //
         // Table
@@ -92,47 +105,68 @@
           $('input#secret').val(creds.secret);
         }
         
-        // List Domains
-        $('button#view').click(function(){
-          $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
-          $.get('/list.domains', getCredentialsInput(), function(data){
-            var list = JSON.parse(data);
-            $(list).each(function(index, value){
-              $('<div class="domain"> <div class="db-icon"><img src="db.png"></img></div> <div class="domain-name"></div> </div>').find(".domain-name").html(value)
-              .end().appendTo('.ui-layout-west');
-            })
-          })
+        // getDomains()
+        function getDomains(callback) {          
+          $('.ui-layout-west .loading-icon').show();
+          $.get('/get.domains', getCredentialsInput(), function(data){
+            $(data).each(function(index, domain){
+              var $obj = $('<div class="domain"> <div class="db-icon"><img src="img/db.png"></img></div> <div class="domain-name-wrapper"><span class="domain-name"></span> <span class="count"></span></div> </div>');
+              $obj.find(".domain-name").html(domain.name);
+              $obj.appendTo('.ui-layout-west .contents');
+              $obj.find('.count').html('('+domain.count+')');
+            });
+          }, 'json')
           .error(function(){
             alert('Error getting data from server');
+          })
+          .complete(function(){
+            $('.ui-layout-west .loading-icon').hide();            
           });
-        });
-        
-        // Get items
-        $('.domain').live('click', function(e){
-          $('.domain.selected').removeClass('selected');
-          $(this).addClass('selected');          
-          
-          var domainName = $(this).find('.domain-name').html();
+        }
+
+        function getItems($obj){
+          var domainName = $obj.find('.domain-name').html();
           var theData = getCredentialsInput();
           theData.domain = domainName;
           $.get('/get.items', theData, function(data){
             console.log(data);
-          });
+          }, 'json');
+        }
+
+        // Click
+        $('button#view').click(function(){          
+          $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
+          $('.ui-layout-west .contents').html('');
+          getDomains();
         });
-			});
-		</script>
-
-		<style type="text/css">
-		  html,body { margin:0; padding:0; font-family: Arial, sans-serif; font-size:13px; cursor:default; }
-      input { padding:5px !important; font-size:13px; }
         
-		  .ui-layout-north { padding:0 !important; overflow:hidden !important; }
-		  .ui-layout-center { padding:0 !important; overflow:hidden !important; font-size:11px !important; }
-		  .ui-layout-west { padding:5px 0 !important; overflow:hidden !important; background:#D2D8E1 !important; }
+        // Click
+        $('.domain').live('click', function(e){
+          $('.domain.selected').removeClass('selected');
+          $(this).addClass('selected');          
+          
+          getItems($(this));
+        });
+        
+        // Click
+        $('button#about').click(function(){
+          $('#about.dialog').dialog('open');
+        });
+      });
+    </script>
 
-      .ui-layout-west div.title { color:#777; padding:5px 0 5px 8px; }
-      .ui-layout-west div.domain { cursor:pointer; padding:3px 5px 3px 10px; color:#141314; text-shadow:#e0e0e0 1px 1px 0; }
-      .ui-layout-west div.domain.selected {
+    <style type="text/css">
+      html,body { margin:0; padding:0; font-family: Arial, sans-serif; font-size:13px; cursor:default; }
+      input { padding:6px !important; font-size:13px; }
+      button { height:31px; }
+        
+      .ui-layout-north { padding:0 !important; overflow:hidden !important; }
+      .ui-layout-center { padding:0 !important; overflow:hidden !important; font-size:11px !important; }
+      .ui-layout-west { padding:5px 0 !important; overflow:hidden !important; background:#D2D8E1 !important; }
+
+      .ui-layout-west .title { color:#777; padding:5px 0 5px 8px; }
+      .ui-layout-west .contents .domain { position:relative; cursor:pointer; padding:3px 5px 3px 10px; color:#141314; text-shadow:#e0e0e0 1px 1px 0; }
+      .ui-layout-west .contents .domain.selected {
         color:#FFFFF5; text-shadow:#555 0 1px 0;
         background: #A0B0CF !important; /* for non-css3 browsers */
 
@@ -140,8 +174,9 @@
         background: -webkit-gradient(linear, left top, left bottom, from(#A0B0CF), to(#7186AB)) !important; /* for webkit browsers */
         background: -moz-linear-gradient(top,  #A0B0CF,  #7186AB) !important; /* for firefox 3.6+ */ 
       }
-      .ui-layout-west div .db-icon { position:absolute; }
-      .ui-layout-west div .domain-name { margin-left:20px; }
+      .ui-layout-west .contents .db-icon { position:absolute; top:3px; left:6px; }
+      .ui-layout-west .contents .domain-name-wrapper { margin-left:20px; margin-right:30px; }
+      .ui-layout-west .loading-icon { display:none; position:absolute; top:50px; left:0; right:0; text-align:center; }
 
       .ui-layout-north {
         background: #777 !important; /* for non-css3 browsers */
@@ -151,27 +186,34 @@
         background: -moz-linear-gradient(top,  #ccc,  #777) !important; /* for firefox 3.6+ */ 
       }
       .ui-layout-north img { position:absolute; top:0; left:0; }
-      .ui-layout-north .credentials { position:absolute; top:8px; left:380px; }
-		  
+      .ui-layout-north .credentials { position:absolute; top:7px; left:380px; }
+      .ui-layout-north .right { position:absolute; top:7px; right:20px; }
+      
       /* Table */
       .table-zebra { background:#F0F4F9; }
       div.t_fixed_header.ui .body tr td { border:none }
-		</style>	
-	</head>
+    </style>  
+  </head>
 
-	<body>
+  <body>
 
     <div class="ui-layout-north">
-      <img src='sdb-webview.png' />
+      <img src='img/logo.png' />
       <div class='credentials'>
         <input id='keyid' style='width:150px' placeholder='AWS Access Key ID'></input>
         <input id='secret' style='width:150px' placeholder='AWS Secret Access Key'></input>
-        <button id='view' style='height:30px; margin-left:5px;'>View contents</button>
+        &nbsp;
+        <button id='view'>View contents</button>
+      </div>
+      <div class='right'>
+        <button id='about'>About</button>
       </div>
     </div>
         
     <div class="ui-layout-west">
       <div class='title'>Domains</div>
+      <div class='loading-icon'><img src='img/ajax.gif'/></div>
+      <div class='contents'></div>
     </div>
 
     <div class="ui-layout-center">
@@ -188,7 +230,11 @@
       </table>
     </div>
 
-	</body>
+    <div class='dialog' id='about' style='display:none;'>
+      <p>By Artur B. Adib</p>
+    </div>
+
+  </body>
 </html>
 
 
