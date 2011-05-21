@@ -38,7 +38,7 @@ app.get('/get.domains', function(req, res){
 
 app.get('/get.items', function(req, res){
   var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
-  sdb.select("select * from "+req.query.domain+" limit 200", function(_err, _res, _meta){
+  sdb.select("select * from "+req.query.domain+" limit 1000", function(_err, _res, _meta){
     res.send(_res);
   });
 });
