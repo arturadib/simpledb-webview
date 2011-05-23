@@ -6,7 +6,7 @@ _This project is at a very early stage. It's probably buggy. Contributions are w
 
 ## Screenshot
 
-
+![Screenshot](http://arturadib.github.com/simpledb-webview/screenshot.png)
 
 ## Current limitations
 
