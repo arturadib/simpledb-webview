@@ -1,5 +1,5 @@
 const port = 8989;
-const ip = '192.168.1.101';
+const ip = '127.0.0.1';
 
 var express = require('express');
 var simpledb = require('simpledb');

@@ -156,8 +156,8 @@ $(function(){
 
   // click: domain contents
   $('table tr').live('click', function(e){
-    $(this).siblings('.ui-state-active').removeClass('ui-state-active');
-    $(this).addClass('ui-state-active');
+    $(this).siblings('.selected').removeClass('selected');
+    $(this).addClass('selected');
   });
 
 });
