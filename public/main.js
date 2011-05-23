@@ -136,9 +136,14 @@ $(function(){
 
   // click: view domains button
   $('button#view').click(function(){          
-    $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
-    $('.ui-layout-west .contents').html('');
-    getDomains();
+    if (getCredentialsInput().keyid.length>0 && getCredentialsInput().secret.length>0) {
+      $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
+      $('.ui-layout-west .contents').html('');
+      getDomains();
+    }
+    else {
+      alert('Please enter your AWS key ID and secret.');
+    }
   });
   
   // click: domain pane
