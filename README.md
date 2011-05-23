@@ -8,6 +8,18 @@ _This project is at a very early stage. It's probably buggy. Contributions are w
 
 ![Screenshot](http://arturadib.github.com/simpledb-webview/screenshot.png)
 
+## Installation and usage
+
+Make sure a recent version of Node.js is installed (tested with v0.4.7). 
+
+Clone this repo and fire up the web server:
+
+    git clone git@github.com:arturadib/simpledb-webview.git
+    cd simpledb-webview
+    node server.js
+    
+Point your browser to `localhost:8989`. Voila.
+
 ## Current limitations
 
 * Can only read data
