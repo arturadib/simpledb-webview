@@ -8,6 +8,11 @@ _This project is at a very early stage. Contributions are welcome!_
 
 ![Screenshot](http://arturadib.github.com/simpledb-webview/screenshot.png)
 
+## Features
+
+* Automatic consolidation of attributes into table format
+* One-click attribute sorting
+
 ## Installation and usage
 
 Make sure a recent version of Node.js is installed (tested with v0.4.7). 
