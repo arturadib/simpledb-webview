@@ -27,7 +27,7 @@ $(function(){
           
   // Cookie management
   function getCredentialsInput(){
-    return {keyid:$('input#keyid').val(), secret:$('input#secret').val()};
+    return {keyid:$.trim($('input#keyid').val()), secret:$.trim($('input#secret').val())};
   }
   if ($.cookie('aws-credentials')) {
     var creds = JSON.parse($.cookie('aws-credentials'));
