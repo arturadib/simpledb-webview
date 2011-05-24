@@ -445,7 +445,7 @@
 								
 								$(this).removeClass('sortedUp').addClass('sortedDown');
 								
-								$(this).append('<span style="display : inline-block; vertical-align : middle" class="ui-icon ui-icon-triangle-1-s"></span>');
+								$(this).append('<span class="ui-icon ui-icon-triangle-1-s"></span>');
 								
 							} else {
 								
@@ -453,7 +453,7 @@
 								
 								$(this).removeClass('sortedDown').addClass('sortedUp');
 								
-								$(this).append('<span style="display : inline-block; vertical-align : middle" class="ui-icon ui-icon-triangle-1-n"></span>');
+								$(this).append('<span class="ui-icon ui-icon-triangle-1-n"></span>');
 							}
 							
 							_headerscontainer[0].scrollLeft = _body[0].scrollLeft;

@@ -12,7 +12,7 @@ app.use(express.static(__dirname + '/public'));
 app.get('/get.domains', function(req, res){
   var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
   sdb.listDomains(function(errDomains, resDomains, metaDomains){
-    if (errDomains) throw errDomains;
+    if (errDomains) throw errDomains.Message;
     
     // Gets all counts, in parallel
     var totalResponses = 0;

@@ -73,7 +73,8 @@ $(function(){
       height: 200,          
       wrapper: false,
       colratio: colRatioVector,
-      resizeCol: true
+      resizeCol: true,
+      sortable: true
     });
   
     fitTable($theTable, $origTableParent);
