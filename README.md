@@ -28,5 +28,6 @@ Point your browser to `localhost:8989`. Voila.
 ## To-do
 
 * Pagination
-* Refresh button - should reflect changes in # of items
+* Add '...' to cropped lines (a-la Sequel Pro)
 * Inline editing
+* Refresh button (should reflect changes in # of items)

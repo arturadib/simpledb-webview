@@ -21,6 +21,8 @@ app.get('/get.domains', function(req, res){
       (function(){
         var j=i;
         sdb.select("select count(*) from "+resDomains[j], function(errCount, resCount, metaCount){
+          if (errCount) throw errCount.Message;
+          
           var obj = {};
           obj.name = resDomains[j];
           obj.count = resCount[0].Count;

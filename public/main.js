@@ -22,7 +22,7 @@ $(function(){
     north__size: 50,
     north__resizable: false,
     north__closable: false,
-    west__minSize: 150
+    west__minSize: 250
   });
           
   // Cookie management
@@ -139,6 +139,7 @@ $(function(){
     if (getCredentialsInput().keyid.length>0 && getCredentialsInput().secret.length>0) {
       $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
       $('.ui-layout-west .contents').html('');
+      $('.ui-layout-center .contents').html('');
       getDomains();
     }
     else {
