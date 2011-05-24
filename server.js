@@ -20,7 +20,7 @@ app.get('/get.domains', function(req, res){
     for (var i=0;i<resDomains.length;i++) {
       (function(){
         var j=i;
-        sdb.select("select count(*) from "+resDomains[j], function(errCount, resCount, metaCount){
+        sdb.select("select count(*) from `"+resDomains[j] + "`", function(errCount, resCount, metaCount){
           if (errCount) throw errCount.Message;
           
           var obj = {};
@@ -40,7 +40,7 @@ app.get('/get.domains', function(req, res){
 
 app.get('/get.items', function(req, res){
   var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
-  sdb.select("select * from "+req.query.domain+" limit 1000", function(_err, _res, _meta){
+  sdb.select("select * from `"+req.query.domain+"` limit 1000", function(_err, _res, _meta){
     res.send(_res);
   });
 });
