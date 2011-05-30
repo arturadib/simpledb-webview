@@ -22,6 +22,10 @@ app.get('/get.domains', function(req, res){
         var j=i;
         sdb.select("select count(*) from `"+resDomains[j] + "`", function(errCount, resCount, metaCount){
           if (errCount) throw errCount.Message;
+
+          if (resCount.length === 0) {
+            throw "Got empty response for domain: "+resDomains[j];
+          }
           
           var obj = {};
           obj.name = resDomains[j];
