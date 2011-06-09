@@ -8,9 +8,11 @@ _This project is at a very early stage. Contributions are welcome!_
 
 A demo of this app is available at:
 
-http://simpledb.herokuapp.com
+https://simpledb.herokuapp.com
 
-However, note that _your AWS credentials will be traveling unencrypted_ to Heroku's servers. For a more secure use, install the app locally on your computer as described below.
+**Note carefully the secure `https` prefix**. Without it your AWS credentials will travel unencrypted all the way to `herokuapp.com`. Still, although I've gone out of my way to offer this secure channel, _I make no guarantees whatsoever about the safety of your AWS credentials! Use at your own risk._
+
+To avoid this additional security layer, install the app locally on your computer as described below.
 
 Here's a screenshot of the app in action:
 
