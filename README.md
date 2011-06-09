@@ -21,6 +21,7 @@ Clone this repo and fire up the web server:
 
     git clone git@github.com:arturadib/simpledb-webview.git
     cd simpledb-webview
+    npm install
     node server.js
     
 Point your browser to `localhost:8989`. Voila.

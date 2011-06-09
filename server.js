@@ -1,4 +1,5 @@
-var port = 8989;
+require.paths.unshift(__dirname + "/custom_modules/");
+var port = process.env.PORT || 8989;
 
 var express = require('express');
 var simpledb = require('simpledb');
