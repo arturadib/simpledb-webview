@@ -1,0 +1,13 @@
+{
+  "name": "simpledb-webview",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "2.3.5",
+    "simpledb": "0.0.6",
+    "aws-lib": "0.0.5",
+    "xml2js": "0.1.6"
+  },
+  "scripts": {
+    "postinstall": "rm -rf node_modules/aws-lib"
+  }
+}
