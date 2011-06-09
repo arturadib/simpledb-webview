@@ -4,7 +4,15 @@ SimpleDB WebView is a web-based browser and explorer for SimpleDB databases with
 
 _This project is at a very early stage. Contributions are welcome!_
 
-## Screenshot
+## Demo
+
+A demo of this app is available at:
+
+http://simpledb.herokuapp.com
+
+However, note that _your AWS credentials will be traveling unencrypted_ to Heroku's servers. For a more secure use, install the app locally on your computer as described below.
+
+Here's a screenshot of the app in action:
 
 ![Screenshot](http://arturadib.github.com/simpledb-webview/screenshot.png)
 
@@ -13,7 +21,7 @@ _This project is at a very early stage. Contributions are welcome!_
 * Automatic consolidation of attributes into table format
 * One-click attribute sorting
 
-## Installation and usage
+## Getting started
 
 Make sure a recent version of Node.js is installed (tested with v0.4.7). 
 
