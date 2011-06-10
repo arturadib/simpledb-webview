@@ -22,7 +22,7 @@ app.get('/get.domains', function(req, res){
         var j=i;
         sdb.select("select count(*) from `"+resDomains[j] + "`", function(errCount, resCount, metaCount){
           if (errCount) throw errCount.Message;
-          
+
           var obj = {};
           obj.name = resDomains[j];
           obj.count = resCount[0].Count;
@@ -41,6 +41,13 @@ app.get('/get.domains', function(req, res){
 app.get('/get.items', function(req, res){
   var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
   sdb.select("select * from `"+req.query.domain+"` limit 1000", function(_err, _res, _meta){
+    res.send(_res);
+  });
+});
+
+app.get('/get.query', function(req, res) {
+  var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
+  sdb.select(req.query.query, function(_err, _res, _meta){
     res.send(_res);
   });
 });

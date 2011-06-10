@@ -38,6 +38,7 @@
 
       /* WEST */
       .ui-layout-west .title { color:#777; padding:5px 0 5px 8px; }
+      .ui-layout-west .domains { min-height: 80px; }
       .ui-layout-west .contents .domain { position:relative; cursor:pointer; padding:3px 5px 3px 10px; color:#141314; text-shadow:#e0e0e0 1px 1px 0; }
       .ui-layout-west .contents .domain.selected {
         color:#FFFFF5; text-shadow:#555 0 1px 0;
@@ -50,6 +51,9 @@
       .ui-layout-west .contents .db-icon { position:absolute; top:3px; left:6px; }
       .ui-layout-west .contents .domain-name-wrapper { margin-left:20px; margin-right:30px; }
       .ui-layout-west .loading-icon { display:none; position:absolute; top:50px; left:0; right:0; text-align:center; }
+
+      .ui-layout-west .queries form { padding: 0px 0px 0px 8px }
+      .ui-layout-west .queries textarea { display: block; width: 90%; min-height: 50px;}
 
       /* NORTH */
       .ui-layout-north {
@@ -96,9 +100,20 @@
     </div>
         
     <div class="ui-layout-west">
-      <div class='title'>Domains</div>
-      <div class='loading-icon'><img src='img/ajax.gif'/></div>
-      <div class='contents'></div>
+      <div class="domains">
+        <div class='title'>Domains</div>
+        <div class='loading-icon'><img src='img/ajax.gif'/></div>
+        <div class='contents'>
+        </div>
+      </div>
+
+      <div class='queries'>
+        <div class='title'>Custom Query</div>
+        <form action="#" class="execute_query">
+          <textarea name="query"></textarea>
+          <button>Go</button>
+        </form>
+      </div>
     </div>
 
     <div class="ui-layout-center">

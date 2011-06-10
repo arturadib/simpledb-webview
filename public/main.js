@@ -123,13 +123,12 @@ $(function(){
   }
 
   // getItems()
-  function getItems($obj){
+  function getItems(url, queryData){
     $('.ui-layout-center .contents').html('');
     $('.ui-layout-center .loading-icon').show();
-    var domainName = $obj.find('.domain-name').html();
     var theData = getCredentialsInput();
-    theData.domain = domainName;
-    $.get('/get.items', theData, function(data){
+    $.extend(theData, queryData);
+    $.get(url, theData, function(data){
       $('.ui-layout-center .loading-icon').hide();
       displayData(data);
     }, 'json');
@@ -153,7 +152,14 @@ $(function(){
     $('.domain.selected').removeClass('selected');
     $(this).addClass('selected');          
     
-    getItems($(this));
+    getItems('/get.items', {domain: $(this).find('.domain-name').html()});
+  });
+
+  // click: execute query
+  $('form.execute_query').submit(function(e) {
+    e.preventDefault();
+    var query = $(this).find('[name=query]').val();
+    getItems('/get.query', {query: query});
   });
   
   // click: about button
