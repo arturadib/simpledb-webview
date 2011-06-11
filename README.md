@@ -16,7 +16,7 @@ To avoid this additional security layer, install the app locally on your compute
 
 Here's a screenshot of the app in action:
 
-![Screenshot](http://arturadib.github.com/simpledb-webview/screenshot.png)
+![Screenshot](https://github.com/arturadib/simpledb-webview/raw/gh-pages/screenshot.png)
 
 ## Features
 
