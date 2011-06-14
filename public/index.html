@@ -11,6 +11,11 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.0/jquery.min.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.12/jquery-ui.min.js"></script>
 
+    <!-- Backbone -->
+    <script src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js" type="text/javascript" charset="utf-8"></script>
+    <script src="http://ajax.cdnjs.com/ajax/libs/underscore.js/1.1.6/underscore-min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="http://ajax.cdnjs.com/ajax/libs/backbone.js/0.3.3/backbone-min.js" type="text/javascript" charset="utf-8"></script>
+
     <!-- jQuery Templates -->
     <script src="https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
 
@@ -60,7 +65,7 @@
         background: -moz-linear-gradient(top,  #ccc,  #777) !important; /* for firefox 3.6+ */ 
       }
       .ui-layout-north img { position:absolute; top:0; left:0; }
-      .ui-layout-north .credentials { position:absolute; top:7px; left:380px; }
+      .ui-layout-north .left { position:absolute; top:7px; left:380px; }
       .ui-layout-north .right { position:absolute; top:7px; right:20px; }
 
       /* CENTER */
@@ -84,9 +89,11 @@
 
     <div class="ui-layout-north">
       <img src='img/logo.png' />
-      <div class='credentials'>
-        <input id='keyid' style='width:150px' placeholder='AWS Access Key ID'></input>
-        <input id='secret' style='width:150px' placeholder='AWS Secret Access Key'></input>
+      <div class='left'>
+        <span class='credentials'>
+          <input id='keyid' style='width:150px' placeholder='AWS Access Key ID'></input>
+          <input id='secret' style='width:150px' placeholder='AWS Secret Access Key'></input>
+        </span>
         &nbsp;
         <button id='view'>View contents</button>
       </div>
@@ -95,7 +102,7 @@
       </div>
     </div>
         
-    <div class="ui-layout-west">
+    <div id="domains" class="ui-layout-west">
       <div class='title'>Domains</div>
       <div class='loading-icon'><img src='img/ajax.gif'/></div>
       <div class='contents'></div>
