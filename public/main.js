@@ -1,17 +1,24 @@
 $(function(){       
 
+  // ****************************************************************
+  // Credentials  
+  // ****************************************************************
+  
   //
   // Credentials Model
   //
   Credentials = Backbone.Model.extend({
+    
     initialize: function(){
       _.bindAll(this, 'save', 'validate', 'fetch');
       this.fetch();
     },
+    
     defaults: {
       keyid: '',
       secret: ''
     },
+    
     validate: function(attr){
       if (typeof attr === 'undefined') {
         var attr = this.attributes;        
@@ -20,80 +27,142 @@ $(function(){
         return "Invalid credentials";
       }
     },
+    
     fetch: function(){
       if ($.cookie('aws-credentials')) {
         var creds = JSON.parse($.cookie('aws-credentials'));
         this.set(creds);
       }
     },
+    
     save: function(){
       var error = this.validate();
       if (!error) {
         $.cookie('aws-credentials', JSON.stringify(this.toJSON()), {path:"/", expires:30}); // expires in 1 month
       }
     }
+        
   });
   credentials = new Credentials();
-
   
   //
   // Credentials View
   //
   CredentialsView = Backbone.View.extend({
+
     el: $('.credentials'),
+    
     events: {
       "blur input": 'updateModel'
     },
+
     initialize: function(){
       _.bindAll(this, 'render', 'updateModel');
-      credentials.bind('change', this.render);
+      this.model.bind('change', this.render);
       this.render();
     },
+
     render: function(){
-      this.$('input#keyid').val( credentials.get('keyid') );
-      this.$('input#secret').val( credentials.get('secret') );
+      this.$('input#keyid').val( this.model.get('keyid') );
+      this.$('input#secret').val( this.model.get('secret') );
     },
+
     updateModel: function(){
-      credentials.set({
+      this.model.set({
         keyid: $.trim( this.$('input#keyid').val() ),
         secret: $.trim( this.$('input#secret').val() )
       }, {
         silent: true // prevents model2Ui-ui2Model infinite loop
       });
     }
+    
   });
-  credentialsView = new CredentialsView();
+  
+  credentialsView = new CredentialsView({
+    model: credentials
+  });
 
 
+  // ****************************************************************
+  // Domains  
+  // ****************************************************************
+
   //
-  // Domains Model
+  // Domain Model
   //
-  Domains = Backbone.View.extend({    
+  Domain = Backbone.Model.extend({
+
+    defaults: {
+      name: '',
+      count: 0
+    }
+
   });
+  
+  domain = new Domain();
+
+  //
+  // Domains Collection
+  //
+  Domains = Backbone.Collection.extend({
+
+    model: Domain
+
+  });
+  
   domains = new Domains();
 
-  
   //
   // Domains View
   //
   DomainsView = Backbone.View.extend({
-    el: $('#domains'),
+
+    el: $('#domains .contents'),
+
+    initialize: function(){
+      _.bindAll(this, 'render');
+      this.collection.bind('change', this.render);
+      this.render();
+    },
+
+    render: function(){
+      var self = this;
+      self.el.html('');
+      this.collection.each(function(domain){
+        var $obj = $('<div class="domain"> <div class="db-icon"><img src="img/db.png"></img></div> <div class="domain-name-wrapper"><span class="domain-name"></span> <span class="count"></span></div> </div>');
+        $obj.find(".domain-name").html(domain.get('name'));
+        $obj.find('.count').html('('+domain.get('count')+')');
+        $obj.appendTo(self.el);
+      });
+    }
+
   });
 
+  domainsView = new DomainsView({
+    collection: domains
+  });
+
+
+  // ****************************************************************
+  // App  
+  // ****************************************************************
   
   //
   // App View
   //
   App = Backbone.View.extend({
+    
     el: $('body'),
+    
     events: {
-      "click button#view": 'showDomains'
+      'click button#view': 'showDomains'
     },
+    
     initialize: function(){
       _.bindAll(this, 'render');
       this.render();
-    },
-  
+    },  
+    
     render: function(){
       // layout
       $(this.el).layout({ 
@@ -123,7 +192,6 @@ $(function(){
       }); // about dialog  
     }, // render
     
-    
     showDomains: function(){
       var credentialsError = credentials.validate();
       if (credentialsError) {
@@ -131,26 +199,16 @@ $(function(){
       }
       else {
         credentials.save();
+        domains.add({name:'asdf', count:11});
         // $.cookie('aws-credentials', JSON.stringify(credentials.toJSON()), {path:"/", expires:30}); // expires in 1 month
         // $('.ui-layout-west .contents').html('');
         // $('.ui-layout-center .contents').html('');
         // getDomains();
       }
     }
-    
-    // getCredentialsInput: function(){
-    //   return {
-    //     keyid:$.trim($('input#keyid').val()), 
-    //     secret:$.trim($('input#secret').val())
-    //   };
-    // }
-    
+      
   });
-
   
-  //
-  // Instances
-  //
   app = new App();
 
   
