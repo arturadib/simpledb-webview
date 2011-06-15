@@ -233,8 +233,10 @@ $(function(){
     
     render: function(){
       var $table = this.buildTable(this.collection.toJSON());
-      $table.appendTo(this.$('.contents'));
+      this.$('.contents').html($table);
 
+      // This section handles table visuals
+      
       // Sets dimensions of table object depending on size of parent. Details are specific to our table plugin ($.fixheadertable()).
       function fitTableInParent($tableObj, $parentObj) {
         var $tableBody = $tableObj.parents('.body');
@@ -265,8 +267,6 @@ $(function(){
           fitTableInParent($table, $origTableParent);                        
         }, 500);
       });
-    
-      // this.$('.contents').html($table);
     },
     
     // Returns a consolidated table (jQuery object format) containing all the rows in data
