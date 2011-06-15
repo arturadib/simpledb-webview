@@ -1,19 +1,43 @@
+//
+// server.js for SimpleDB WebView
+//
+
+// We keep our own modules separate from npm modules (which go into node_modules/)
 require.paths.unshift(__dirname + "/custom_modules/");
-var port = process.env.PORT || 8989;
+var port = process.env.PORT || 8989; // specified vs. default port
 
 var express = require('express');
 var simpledb = require('simpledb');
 
 var app = express.createServer();
 
+app.use(express.cookieParser());
 app.use(app.router);
 app.use(express.static(__dirname + '/public'));
 
+
 //
-// API : get.domains
+// api/select
 //
-app.get('/get.domains', function(req, res){
-  var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
+app.get('/api/select', function(req, res){
+  var cookie = JSON.parse( req.cookies['aws-credentials'] );
+  var creds = { keyid:cookie.keyid, secret:cookie.secret };
+  var sdb = new simpledb.SimpleDB(creds);  
+
+  sdb.select(req.query.queryStr, function(_err, _res, _meta){
+    res.send(_res);
+  });
+});
+
+
+//
+// api/domains
+//
+app.get('/api/domains', function(req, res){
+  var cookie = JSON.parse( req.cookies['aws-credentials'] );
+  var creds = { keyid:cookie.keyid, secret:cookie.secret };
+  var sdb = new simpledb.SimpleDB(creds);  
+
   sdb.listDomains(function(errDomains, resDomains, metaDomains){
     if (errDomains) throw errDomains.Message;
     
@@ -25,7 +49,7 @@ app.get('/get.domains', function(req, res){
         var j=i;
         sdb.select("select count(*) from `"+resDomains[j] + "`", function(errCount, resCount, metaCount){
           if (errCount) throw errCount.Message;
-
+  
           if (resCount.length === 0) {
             throw "Got empty response for domain: "+resDomains[j];
           }
@@ -42,16 +66,6 @@ app.get('/get.domains', function(req, res){
         }); // sdb.select
       })(); // anonymous wrapper
     }    
-  });
-});
-
-//
-// API : get.items
-//
-app.get('/get.items', function(req, res){
-  var sdb = new simpledb.SimpleDB({ keyid:req.query.keyid, secret: req.query.secret});  
-  sdb.select("select * from `"+req.query.domain+"` limit 1000", function(_err, _res, _meta){
-    res.send(_res);
   });
 });
 

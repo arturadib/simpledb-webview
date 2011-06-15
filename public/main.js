@@ -1,11 +1,13 @@
 $(function(){       
 
-  // ****************************************************************
+  //*****************************************************************
+  //
   // Credentials
-  // ****************************************************************
+  //
+  //*****************************************************************
   
   //
-  // Credentials Model
+  // Credentials: Model
   //
   Credentials = Backbone.Model.extend({
     
@@ -41,10 +43,11 @@ $(function(){
     }
         
   });
+  
   credentials = new Credentials();
   
   //
-  // Credentials View
+  // Credentials: View
   //
   CredentialsView = Backbone.View.extend({
 
@@ -85,12 +88,14 @@ $(function(){
   });
 
 
-  // ****************************************************************
+  //*****************************************************************
+  //
   // Domains  
-  // ****************************************************************
+  //
+  //*****************************************************************
 
   //
-  // Domain Model
+  // Domain: Model
   //
   Domain = Backbone.Model.extend({
     defaults: {
@@ -99,39 +104,61 @@ $(function(){
     }
   });
   
-  domain = new Domain();
-
   //
-  // Domains Collection
+  // Domains: Collection
   //
   Domains = Backbone.Collection.extend({
-    model: Domain
+    model: Domain,
+    url: '/api/domains'
   });
   
   domains = new Domains();
 
   //
-  // Domains View
+  // Domains: View
   //
   DomainsView = Backbone.View.extend({
 
-    el: $('#domains .contents'),
+    el: $('#domains'),
 
+    events: {
+      'click .contents .domain': 'handleClick'
+    },
+    
     initialize: function(){
-      _.bindAll(this, 'render');
+      _.bindAll(this, 'render', 'showLoadingIcon', 'hideLoadingIcon', 'showError', 'handleClick');
       this.collection.bind('change', this.render);
+      this.collection.bind('reset', this.render);
       this.render();
     },
 
     render: function(){
       var self = this;
-      self.el.html('');
+      this.el.find('.contents').html('');
       this.collection.each(function(domain){
         var $obj = $('<div class="domain"> <div class="db-icon"><img src="img/db.png"></img></div> <div class="domain-name-wrapper"><span class="domain-name"></span> <span class="count"></span></div> </div>');
         $obj.find(".domain-name").html(domain.get('name'));
         $obj.find('.count').html('('+domain.get('count')+')');
-        $obj.appendTo(self.el);
+        $obj.appendTo(self.el.find('.contents'));
       });
+    },
+    
+    handleClick: function(event){
+      currentQuery.set({
+        queryStr: 'select * from ' + $(event.currentTarget).find('.domain-name').html()
+      });
+    },
+    
+    showLoadingIcon: function(){
+      this.$('.loading-icon').show();
+    },
+
+    hideLoadingIcon: function(){
+      this.$('.loading-icon').hide();
+    },
+    
+    showError: function(msg){
+      alert('Error with domains: ' + msg);
     }
 
   });
@@ -141,12 +168,182 @@ $(function(){
   });
 
 
-  // ****************************************************************
-  // App  
-  // ****************************************************************
+  //****************************************************************
+  //
+  // CurrentQuery
+  //
+  // The actual SimpleDB query corresponding to the desired view.
+  // It's declared as a Backbone model so that we can listed to
+  // its changes and update the view accordingly.
+  //
+  //****************************************************************
+
+  //
+  // CurrentQuery: Model
+  //
+  CurrentQuery = Backbone.Model.extend({
+    defaults: {
+      queryStr: ''
+    }
+  });
+  
+  currentQuery = new CurrentQuery();
+
+
+  //****************************************************************
+  //
+  // Items
+  //
+  // Table of database items. Listens for changes in currentQuery
+  // and displays correspoding items.
+  //
+  //****************************************************************
   
   //
-  // App View
+  // Item: Model
+  //
+  Item = Backbone.Model.extend();
+
+  //
+  // Items: Collection
+  //
+  Items = Backbone.Collection.extend({
+    model: Item,
+    query: {}, // to be assigned at instantiation
+    url: function(){
+      return '/api/select?queryStr=' + encodeURIComponent(this.query.get('queryStr'));
+    }
+  });
+
+  items = new Items();
+  items.query = currentQuery;
+
+  //
+  // Items: View
+  //
+  ItemsView = Backbone.View.extend({
+    
+    el: $('#items'),
+    
+    initialize: function(){
+      _.bindAll(this, 'render', 'fetchItems', 'showLoadingIcon', 'hideLoadingIcon', 'buildTable');
+      this.collection.bind('reset', this.render);
+      this.collection.query.bind('change', this.fetchItems); // listen for changes in current query
+    },
+    
+    render: function(){
+      var $table = this.buildTable(this.collection.toJSON());
+      $table.appendTo(this.$('.contents'));
+
+      // Sets dimensions of table object depending on size of parent. Details are specific to our table plugin ($.fixheadertable()).
+      function fitTableInParent($tableObj, $parentObj) {
+        var $tableBody = $tableObj.parents('.body');
+        $tableBody.height( $parentObj.height() - $tableBody.siblings('.headtable').height() - 2); // see live DOM after $.fixheadertable()
+      }      
+      
+      var numFields = $table.find('thead th').size();
+      var colRatioVector = [];
+      for (var i=0;i<numFields;i++){
+        colRatioVector.push(200);
+      }
+      var $origTableParent = $table.parent(); // prior to the wrappers due to fixheadertable()
+      $table.fixheadertable({
+        zebra: true,
+        zebraClass: 'table-zebra',
+        height: 200,          
+        wrapper: false,
+        colratio: colRatioVector,
+        resizeCol: true,
+        sortable: true
+      });
+        
+      fitTableInParent($table, $origTableParent);
+      // Ensures table always takes up available screen space, even after browser resizing
+      $(window).resize(function(){
+        clearTimeout(window.resizeTimer);
+        window.resizeTimer = setTimeout(function(){ // hack to ensure the event is only fired *after* resizing motion (otherwise we get too many events fired off)
+          fitTableInParent($table, $origTableParent);                        
+        }, 500);
+      });
+    
+      // this.$('.contents').html($table);
+    },
+    
+    // Returns a consolidated table (jQuery object format) containing all the rows in data
+    // The columns are consolidated to account for heterogenous data (i.e. rows with different schema)
+    buildTable: function(data){
+      var self = this;
+
+      // build fieldNames from heterogeneous data
+      var fieldNames = [];
+      _(data).each(function(datum){ // loop over each row
+        for (key in datum) {
+          if (fieldNames.indexOf(key)<0)
+            fieldNames.push(key);
+        }
+      });
+      fieldNames.sort();
+      
+      // build table head
+      var $table = $('<table cellpadding="0" cellspacing="0" border="0" class="display" id="the-table"></table>');
+      var $tHead = $('<thead></thead>').appendTo($table);
+      var templateStr = '';
+      fieldNames.forEach(function(field){
+        $('<th></th>').html(field).appendTo($tHead);
+        templateStr += '<td>${'+self.encodeHtml(field)+'}</td>';
+      });
+      
+      // build table body
+      var $tBody = $('<tbody></tbody>').appendTo($table);
+      templateStr = '<tr>'+templateStr+'</tr>';
+      $.template('dataTemplate', templateStr);
+      $.tmpl('dataTemplate', data).appendTo($tBody);
+      
+      return $table; 
+    },
+    
+    fetchItems: function(){
+      var self = this;
+      this.collection.reset();
+      this.showLoadingIcon();
+      this.collection.fetch({
+        success: function(){
+          self.hideLoadingIcon();
+        },
+        error: function(){
+          self.hideLoadingIcon();
+        }
+      });
+    },
+    
+    showLoadingIcon: function(){
+      this.$('.loading-icon').show();
+    },
+
+    hideLoadingIcon: function(){
+      this.$('.loading-icon').hide();
+    },
+    
+    // utility function to HTML-encode characters
+    encodeHtml : function(str){
+      return $('<div/>').text(str).html();
+    }    
+    
+  });
+
+  itemsView = new ItemsView({
+    collection: items
+  });
+  
+
+  //****************************************************************
+  //
+  // App  
+  //
+  //****************************************************************
+  
+  //
+  // App: View
   //
   App = Backbone.View.extend({
     
@@ -193,163 +390,29 @@ $(function(){
     showDomains: function(){
       if (credentials.isBad()) {
         credentialsView.showError();
+        return;
       }
-      else {
-        credentials.save();
-        domains.add({name:'asdf', count:11});
-        // $.cookie('aws-credentials', JSON.stringify(credentials.toJSON()), {path:"/", expires:30}); // expires in 1 month
+
+      credentials.save();
+      domains.reset();
+      // items.reset();
+      domainsView.showLoadingIcon();
+      domains.fetch({
+        success: function(col, res){
+          domainsView.hideLoadingIcon();
+        },
+        error: function(col, res){
+          domainsView.hideLoadingIcon();
+          domainsView.showError(res.responseText);
+        }
+      });
         // $('.ui-layout-west .contents').html('');
         // $('.ui-layout-center .contents').html('');
         // getDomains();
-      }
     }
       
   });
   
   app = new App();
-
-  
-/*
-  
-  // Cookie management
-  if ($.cookie('aws-credentials')) {
-    var creds = JSON.parse($.cookie('aws-credentials'));
-    $('input#keyid').val(creds.keyid);
-    $('input#secret').val(creds.secret);
-  }
-  
-  // getDomains()
-  function getDomains(callback) {          
-    $('.ui-layout-west .loading-icon').show();
-    $.get('/get.domains', getCredentialsInput(), function(data){
-      $(data).each(function(index, domain){
-        var $obj = $('<div class="domain"> <div class="db-icon"><img src="img/db.png"></img></div> <div class="domain-name-wrapper"><span class="domain-name"></span> <span class="count"></span></div> </div>');
-        $obj.find(".domain-name").html(domain.name);
-        $obj.appendTo('.ui-layout-west .contents');
-        $obj.find('.count').html('('+domain.count+')');
-      });
-    }, 'json')
-    .error(function(){
-      alert('Error getting data from server');
-    })
-    .complete(function(){
-      $('.ui-layout-west .loading-icon').hide();            
-    });
-  }
-  
-  // encodeHtml()
-  function encodeHtml(str){
-    return $('<div/>').text(str).html();
-  }
-        
-  // displayTable()
-  function displayTable($theTable){
-    var numFields = $theTable.find('thead th').size();
-    var colRatioVector = [];
-    for (var i=0;i<numFields;i++){
-      colRatioVector.push(200);
-    }
-    var $origTableParent = $theTable.parent(); // prior to the wrappers due to fixheadertable()
-    $theTable.fixheadertable({
-      zebra: true,
-      zebraClass: 'table-zebra',
-      height: 200,          
-      wrapper: false,
-      colratio: colRatioVector,
-      resizeCol: true,
-      sortable: true
-    });
-  
-    fitTable($theTable, $origTableParent);
-    $(window).resize(function(){
-      clearTimeout(window.resizeTimer);
-      window.resizeTimer = setTimeout(function(){ // hack to ensure the event is only fired *after* resizing motion            
-        fitTable($theTable, $origTableParent);                        
-      }, 500);
-    });
-    
-    function fitTable($tableObj, $parentObj) {
-      var $tableBody = $tableObj.parents('.body');
-      $tableBody.height( $parentObj.height() - $tableBody.siblings('.headtable').height() - 2); // see DOM after $.fixheadertable()
-    }
-  }
-  
-  // displayData()
-  function displayData(data){          
-    // build fieldNames from heterogeneous data
-    var fieldNames = [];
-    data.forEach(function(datum){ // loop over each row
-      for (key in datum) {
-        if (fieldNames.indexOf(key)<0)
-          fieldNames.push(key);
-      }
-    });
-    fieldNames.sort();
-  
-    // build table head
-    var $table = $('<table cellpadding="0" cellspacing="0" border="0" class="display" id="the-table"></table>');
-    var $tHead = $('<thead></thead>').appendTo($table);
-    var templateStr = '';
-    fieldNames.forEach(function(field){
-      $('<th></th>').html(field).appendTo($tHead);
-      templateStr += '<td>${'+encodeHtml(field)+'}</td>';
-    });
-  
-    // build table body
-    var $tBody = $('<tbody></tbody>').appendTo($table);
-    templateStr = '<tr>'+templateStr+'</tr>';
-    $.template('dataTemplate', templateStr);
-    $.tmpl('dataTemplate', data).appendTo($tBody);
-    
-    $table.appendTo('.ui-layout-center .contents');
-    displayTable($table);
-  }
-  
-  // getItems()
-  function getItems($obj){
-    $('.ui-layout-center .contents').html('');
-    $('.ui-layout-center .loading-icon').show();
-    var domainName = $obj.find('.domain-name').html();
-    var theData = getCredentialsInput();
-    theData.domain = domainName;
-    $.get('/get.items', theData, function(data){
-      $('.ui-layout-center .loading-icon').hide();
-      displayData(data);
-    }, 'json');
-  }
-  
-  // click: view domains button
-  $('button#view').click(function(){          
-    if (getCredentialsInput().keyid.length>0 && getCredentialsInput().secret.length>0) {
-      $.cookie('aws-credentials', JSON.stringify(getCredentialsInput()), {path:"/", expires:30}); // expires in 1 month
-      $('.ui-layout-west .contents').html('');
-      $('.ui-layout-center .contents').html('');
-      getDomains();
-    }
-    else {
-      alert('Please enter your AWS key ID and secret.');
-    }
-  });
-  
-  // click: domain pane
-  $('.domain').live('click', function(e){
-    $('.domain.selected').removeClass('selected');
-    $(this).addClass('selected');          
-    
-    getItems($(this));
-  });
-  
-  // click: about button
-  $('button#about').click(function(){
-    $('#about-dialog').dialog('open');
-  });
-  
-  // click: domain contents
-  $('table tr').live('click', function(e){
-    $(this).siblings('.selected').removeClass('selected');
-    $(this).addClass('selected');
-  });
-
-*/
 
 });
