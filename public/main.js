@@ -1,7 +1,7 @@
 $(function(){       
 
   // ****************************************************************
-  // Credentials  
+  // Credentials
   // ****************************************************************
   
   //
@@ -10,7 +10,7 @@ $(function(){
   Credentials = Backbone.Model.extend({
     
     initialize: function(){
-      _.bindAll(this, 'save', 'validate', 'fetch');
+      _.bindAll(this, 'save', 'fetch', 'isBad');
       this.fetch();
     },
     
@@ -19,12 +19,11 @@ $(function(){
       secret: ''
     },
     
-    validate: function(attr){
-      if (typeof attr === 'undefined') {
-        var attr = this.attributes;        
-      }
+    // not using validate() as it is too pedantic for our purposes (called on both set() and save())
+    isBad: function(){
+      var attr = this.attributes;
       if (attr.keyid.length===0 || attr.secret.length===0) {
-        return "Invalid credentials";
+        return "Empty Key ID/Secret";
       }
     },
     
@@ -36,8 +35,7 @@ $(function(){
     },
     
     save: function(){
-      var error = this.validate();
-      if (!error) {
+      if (!this.isBad()) {
         $.cookie('aws-credentials', JSON.stringify(this.toJSON()), {path:"/", expires:30}); // expires in 1 month
       }
     }
@@ -57,7 +55,7 @@ $(function(){
     },
 
     initialize: function(){
-      _.bindAll(this, 'render', 'updateModel');
+      _.bindAll(this, 'render', 'updateModel', 'showError');
       this.model.bind('change', this.render);
       this.render();
     },
@@ -72,8 +70,12 @@ $(function(){
         keyid: $.trim( this.$('input#keyid').val() ),
         secret: $.trim( this.$('input#secret').val() )
       }, {
-        silent: true // prevents model2Ui-ui2Model infinite loop
+        error: this.render // ensures view is in sync with model even if model doesn't validate
       });
+    },
+    
+    showError: function(){
+      alert('Error with credentials: ' + this.model.isBad());
     }
     
   });
@@ -91,12 +93,10 @@ $(function(){
   // Domain Model
   //
   Domain = Backbone.Model.extend({
-
     defaults: {
       name: '',
       count: 0
     }
-
   });
   
   domain = new Domain();
@@ -105,9 +105,7 @@ $(function(){
   // Domains Collection
   //
   Domains = Backbone.Collection.extend({
-
     model: Domain
-
   });
   
   domains = new Domains();
@@ -193,9 +191,8 @@ $(function(){
     }, // render
     
     showDomains: function(){
-      var credentialsError = credentials.validate();
-      if (credentialsError) {
-        alert('Error: '+credentialsError);
+      if (credentials.isBad()) {
+        credentialsView.showError();
       }
       else {
         credentials.save();
