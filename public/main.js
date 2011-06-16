@@ -232,11 +232,15 @@ $(function(){
     },
     
     render: function(){
+      if (this.collection.length === 0) {
+        this.$('.contents').html('');
+        return;
+      }
+      
+      // Build table HTML object
       var $table = this.buildTable(this.collection.toJSON());
       this.$('.contents').html($table);
 
-      // This section handles table visuals
-      
       // Sets dimensions of table object depending on size of parent. Details are specific to our table plugin ($.fixheadertable()).
       function fitTableInParent($tableObj, $parentObj) {
         var $tableBody = $tableObj.parents('.body');
@@ -306,14 +310,10 @@ $(function(){
       var self = this;
       this.collection.reset();
       this.showLoadingIcon();
-      this.collection.fetch({
-        success: function(){
+      this.collection.fetch()
+        .complete(function(){
           self.hideLoadingIcon();
-        },
-        error: function(){
-          self.hideLoadingIcon();
-        }
-      });
+        });
     },
     
     showLoadingIcon: function(){
@@ -397,18 +397,13 @@ $(function(){
       domains.reset();
       // items.reset();
       domainsView.showLoadingIcon();
-      domains.fetch({
-        success: function(col, res){
-          domainsView.hideLoadingIcon();
-        },
-        error: function(col, res){
-          domainsView.hideLoadingIcon();
-          domainsView.showError(res.responseText);
-        }
-      });
-        // $('.ui-layout-west .contents').html('');
-        // $('.ui-layout-center .contents').html('');
-        // getDomains();
+      domains.fetch()
+        .complete(function(){ 
+          domainsView.hideLoadingIcon(); 
+        })
+        .error(function(){ 
+          domainsView.showError(res.responseText); 
+        });
     }
       
   });
