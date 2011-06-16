@@ -2,22 +2,27 @@
 // server.js for SimpleDB WebView
 //
 
-// We keep our own modules separate from npm modules (which go into node_modules/)
+// We keep our own modules separate from npm modules (which go into node_modules)
 require.paths.unshift(__dirname + "/custom_modules/");
-var port = process.env.PORT || 8989; // specified vs. default port
 
 var express = require('express');
 var simpledb = require('simpledb');
 
-var app = express.createServer();
+// Heroku specifies a PORT environment variable
+var port = process.env.PORT || 8989;
 
+var app = express.createServer();
 app.use(express.cookieParser());
 app.use(app.router);
+
+//
+// Static server
+//
 app.use(express.static(__dirname + '/public'));
 
 
 //
-// api/select
+// API: api/select
 //
 app.get('/api/select', function(req, res){
   var cookie = JSON.parse( req.cookies['aws-credentials'] );
@@ -31,7 +36,7 @@ app.get('/api/select', function(req, res){
 
 
 //
-// api/domains
+// API: api/domains
 //
 app.get('/api/domains', function(req, res){
   var cookie = JSON.parse( req.cookies['aws-credentials'] );

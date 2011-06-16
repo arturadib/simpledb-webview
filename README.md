@@ -35,15 +35,3 @@ Clone this repo and fire up the web server:
     node server.js
     
 Point your browser to `localhost:8989`. Voila.
-
-## Current limitations
-
-* Can only read data
-* No pagination - only the first 1000 items are shown at a time
-
-## To-do
-
-* Pagination
-* Add '...' to cropped lines (a-la Sequel Pro)
-* Inline editing
-* Refresh button (should reflect changes in # of items)

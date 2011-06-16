@@ -21,7 +21,7 @@ $(function(){
       secret: ''
     },
     
-    // not using validate() as it is too pedantic for our purposes (called on both set() and save())
+    // Not using validate() as it is too pedantic for our purposes (called on both set() and save())
     isBad: function(){
       var attr = this.attributes;
       if (attr.keyid.length===0 || attr.secret.length===0) {
@@ -29,6 +29,7 @@ $(function(){
       }
     },
     
+    // Override sync method to use Cookies
     fetch: function(){
       if ($.cookie('aws-credentials')) {
         var creds = JSON.parse($.cookie('aws-credentials'));
@@ -36,6 +37,7 @@ $(function(){
       }
     },
     
+    // Override sync method to use Cookies
     save: function(){
       if (!this.isBad()) {
         $.cookie('aws-credentials', JSON.stringify(this.toJSON()), {path:"/", expires:30}); // expires in 1 month
@@ -144,8 +146,13 @@ $(function(){
     },
     
     handleClick: function(event){
+      var $obj = $(event.currentTarget);
+      $obj.siblings('.selected').removeClass('selected');
+      $obj.addClass('selected');
+      
+      // This will fire off a 'change' event, listened to by itemView
       currentQuery.set({
-        queryStr: 'select * from ' + $(event.currentTarget).find('.domain-name').html()
+        queryStr: 'select * from `' + $obj.find('.domain-name').html() + '` limit 1000'
       });
     },
     
@@ -173,7 +180,7 @@ $(function(){
   // CurrentQuery
   //
   // The actual SimpleDB query corresponding to the desired view.
-  // It's declared as a Backbone model so that we can listed to
+  // It's declared as a Backbone model so that we can listen to
   // its changes and update the view accordingly.
   //
   //****************************************************************
@@ -209,7 +216,7 @@ $(function(){
   //
   Items = Backbone.Collection.extend({
     model: Item,
-    query: {}, // to be assigned at instantiation
+    query: {}, // object to be assigned at instantiation
     url: function(){
       return '/api/select?queryStr=' + encodeURIComponent(this.query.get('queryStr'));
     }
@@ -224,6 +231,10 @@ $(function(){
   ItemsView = Backbone.View.extend({
     
     el: $('#items'),
+    
+    events: {
+      'click table tr': 'handleItemClick'
+    },
     
     initialize: function(){
       _.bindAll(this, 'render', 'fetchItems', 'showLoadingIcon', 'hideLoadingIcon', 'buildTable');
@@ -273,12 +284,12 @@ $(function(){
       });
     },
     
-    // Returns a consolidated table (jQuery object format) containing all the rows in data
-    // The columns are consolidated to account for heterogenous data (i.e. rows with different schema)
+    // Returns a consolidated table (jQuery object format) containing all the rows in the vector 'data'.
+    // The columns are consolidated to account for heterogenous data, i.e. rows with different schema.
     buildTable: function(data){
       var self = this;
 
-      // build fieldNames from heterogeneous data
+      // Build fieldNames from heterogeneous data
       var fieldNames = [];
       _(data).each(function(datum){ // loop over each row
         for (key in datum) {
@@ -288,7 +299,7 @@ $(function(){
       });
       fieldNames.sort();
       
-      // build table head
+      // Build table head
       var $table = $('<table cellpadding="0" cellspacing="0" border="0" class="display" id="the-table"></table>');
       var $tHead = $('<thead></thead>').appendTo($table);
       var templateStr = '';
@@ -297,7 +308,7 @@ $(function(){
         templateStr += '<td>${'+self.encodeHtml(field)+'}</td>';
       });
       
-      // build table body
+      // Build table body
       var $tBody = $('<tbody></tbody>').appendTo($table);
       templateStr = '<tr>'+templateStr+'</tr>';
       $.template('dataTemplate', templateStr);
@@ -316,6 +327,12 @@ $(function(){
         });
     },
     
+    handleItemClick: function(event){
+      var $obj = $(event.currentTarget);
+      $obj.addClass('selected');      
+      $obj.siblings('.selected').removeClass('selected');
+    },
+    
     showLoadingIcon: function(){
       this.$('.loading-icon').show();
     },
@@ -327,7 +344,7 @@ $(function(){
     // utility function to HTML-encode characters
     encodeHtml : function(str){
       return $('<div/>').text(str).html();
-    }    
+    }
     
   });
 
@@ -350,7 +367,8 @@ $(function(){
     el: $('body'),
     
     events: {
-      'click button#view': 'showDomains'
+      'click button#view': 'showDomains',
+      'click button#about': 'showAbout'
     },
     
     initialize: function(){
@@ -404,6 +422,10 @@ $(function(){
         .error(function(){ 
           domainsView.showError(res.responseText); 
         });
+    }, // showDomains
+    
+    showAbout: function(){
+      this.$('#about-dialog').dialog('open');      
     }
       
   });
