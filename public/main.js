@@ -233,7 +233,7 @@ $(function(){
     el: $('#items'),
     
     events: {
-      'click table tr': 'handleItemClick'
+      'dblclick table tr': 'handleItemClick'
     },
     
     initialize: function(){
@@ -331,6 +331,8 @@ $(function(){
       var $obj = $(event.currentTarget);
       $obj.addClass('selected');      
       $obj.siblings('.selected').removeClass('selected');
+
+      this.$('#edit-item-dialog').dialog('open');
     },
     
     showLoadingIcon: function(){
