@@ -332,7 +332,7 @@ $(function(){
       $obj.addClass('selected');      
       $obj.siblings('.selected').removeClass('selected');
 
-      this.$('#edit-item-dialog').dialog('open');
+      $('#edit-item-dialog').dialog('open');
     },
     
     showLoadingIcon: function(){
@@ -405,6 +405,20 @@ $(function(){
           }
         }   
       }); // about dialog  
+
+      this.$('#edit-item-dialog').dialog({
+	    autoOpen: false,
+	    width: 500,
+	    title: 'Edit Item',
+	    modal: true,
+	    buttons: {
+		  Update: function() {
+		  },
+		  Cancel: function() {
+			$(this).dialog('close');
+		  }
+		}
+	  }); // edit-item dialog
     }, // render
     
     showDomains: function(){
