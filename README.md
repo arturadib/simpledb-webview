@@ -27,7 +27,7 @@ Here's a screenshot of the app in action:
 
 Make sure a recent version of Node.js is installed (tested with v0.4.7). 
 
-Clone this repo and fire up the web server:
+Clone this repo, install the dependencies via `npm`, and fire up the web server:
 
     git clone git@github.com:arturadib/simpledb-webview.git
     cd simpledb-webview
