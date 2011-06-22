@@ -6,7 +6,7 @@ _This project is at a very early stage. Contributions are welcome!_
 
 ## Demo
 
-A demo of this app is available at:
+A demo of this app is available at the link below. Due to [certain limitations](http://devcenter.heroku.com/articles/dyno-idling) with Heroku's hosting, *it might take several seconds* for the app to boot up.
 
 https://simpledb.herokuapp.com
 
