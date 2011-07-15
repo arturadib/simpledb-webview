@@ -6,7 +6,7 @@ _This project is at a very early stage. Contributions are welcome!_
 
 ## Demo
 
-A demo of this app is available at:
+A demo of this app is available at the link below. Due to [certain limitations](http://devcenter.heroku.com/articles/dyno-idling) with Heroku's basic hosting, *it might take several seconds* for the app to boot up.
 
 https://simpledb.herokuapp.com
 
@@ -27,7 +27,7 @@ Here's a screenshot of the app in action:
 
 Make sure a recent version of Node.js is installed (tested with v0.4.7). 
 
-Clone this repo and fire up the web server:
+Clone this repo, install the dependencies via `npm`, and fire up the web server:
 
     git clone git@github.com:arturadib/simpledb-webview.git
     cd simpledb-webview
