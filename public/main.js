@@ -154,6 +154,9 @@ $(function(){
       currentQuery.set({
         queryStr: 'select * from `' + $obj.find('.domain-name').html() + '` limit 1000'
       });
+      currentQuery.set({
+        domain: $obj.find('.domain-name').html()
+      });
     },
     
     showLoadingIcon: function(){
@@ -190,7 +193,8 @@ $(function(){
   //
   CurrentQuery = Backbone.Model.extend({
     defaults: {
-      queryStr: ''
+      queryStr: '',
+      domain: ''
     }
   });
   
@@ -209,7 +213,20 @@ $(function(){
   //
   // Item: Model
   //
-  Item = Backbone.Model.extend();
+  Item = Backbone.Model.extend({
+	domain: function() { return this.collection.query.get('domain'); },
+    item:   function() { return this.get('$ItemName'); },
+    attr:   function() {
+      var itemClone = this.clone();
+      itemClone.unset('$ItemName');
+      return itemClone.attributes;
+    },
+    url: function(){
+      return '/api/put?domain=' + encodeURIComponent(this.get('domain')) +
+             '&item=' + encodeURIComponent(this.get('$ItemName')) +
+             '&attributes=' + encodeURIComponent(JSON.stringify(this.attr()));
+    }
+  });
 
   //
   // Items: Collection
@@ -217,6 +234,9 @@ $(function(){
   Items = Backbone.Collection.extend({
     model: Item,
     query: {}, // object to be assigned at instantiation
+    domain: function(){
+	  return this.query.get('domain');
+    },
     url: function(){
       return '/api/select?queryStr=' + encodeURIComponent(this.query.get('queryStr'));
     }
@@ -332,7 +352,8 @@ $(function(){
       $obj.addClass('selected');      
       $obj.siblings('.selected').removeClass('selected');
 
-      $('#edit-item-dialog').dialog('open');
+      // populate and show dialog with item's attributes and values for editing
+      app.showEditItem($obj);
     },
     
     showLoadingIcon: function(){
@@ -442,7 +463,12 @@ $(function(){
     
     showAbout: function(){
       this.$('#about-dialog').dialog('open');      
-    }
+    }, // showAbout
+
+    showEditItem: function(item){
+	  // TODO: setup form containing item's attributes and values
+	  this.$('#edit-item-dialog').dialog('open');
+    } // showEditItem
       
   });
   
