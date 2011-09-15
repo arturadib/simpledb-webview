@@ -53,21 +53,22 @@ app.get('/api/domains', function(req, res){
       (function(){ // anonymous wrapper for keeping track of counter
         var j=i;
         sdb.select("select count(*) from `"+resDomains[j] + "`", function(errCount, resCount, metaCount){
-          if (errCount) throw errCount.Message;
-  
-          if (resCount.length === 0) {
-            throw "Got empty response for domain: "+resDomains[j];
-          }
-          
-          var obj = {};
-          obj.name = resDomains[j];
-          obj.count = resCount[0].Count;
-          domainsObj.push(obj);
-        
-          totalResponses++;
-          if (totalResponses == resDomains.length) { // last one?
-            res.send(domainsObj);
-          }
+                      try {
+				 if (resCount.length === 0) {
+		            console.log('Got empty response for domain: '+resDomains[j]);
+		         }
+				 var obj = {};
+		         obj.name = resDomains[j];
+		         obj.count = resCount[0].Count;
+		         domainsObj.push(obj);
+
+		         totalResponses++;
+		         if (totalResponses == resDomains.length) { // last one?
+		           res.send(domainsObj);
+		         }
+			} catch (errCount) {
+				console.log('error: ' + errCount.Message);
+			}
         }); // sdb.select
       })(); // anonymous wrapper
     }    
