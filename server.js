@@ -3,7 +3,7 @@
 //
 
 // We keep our own modules separate from npm modules (which go into node_modules)
-require.paths.unshift(__dirname + "/custom_modules/");
+//require.paths.unshift(__dirname + "/custom_modules/");
 
 var express = require('express');
 var simpledb = require('simpledb');
